@@ -55,6 +55,10 @@ defmodule APNSx.EncoderTest do
     assert 5 == priority
   end
 
+  test "handles empty notification" do
+    assert <<2, 0, 0, 0, 0>> == Encoder.to_binary(%Notification{})
+  end
+
   defp extract_items(data \\ @encoded) do
     <<_ :: size(40), frames :: binary>> = data
     extract_items(frames, [])
