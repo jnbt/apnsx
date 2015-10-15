@@ -4,11 +4,11 @@ defmodule APNSx.EncoderTest do
   alias APNSx.Notification
 
   @notification %Notification{
-    :device_token => "<ce8be627 2e43e855 16033e24 b4c28922 0eeda487 9c477160 b2545e95 b68b5969>",
-    :payload => ~S({"aps": {"badge": 1}}),
-    :id => 42,
-    :expiry => 1444909802,
-    :priority => 5
+    device_token: "<ce8be627 2e43e855 16033e24 b4c28922 0eeda487 9c477160 b2545e95 b68b5969>",
+    payload: ~S({"aps": {"badge": 1}}),
+    id: 42,
+    expiry: 1444909802,
+    priority: 5
   }
 
   @encoded Encoder.to_binary(@notification)
