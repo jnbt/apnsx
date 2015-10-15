@@ -21,7 +21,7 @@ defmodule APNSx.Decoder do
   Returns the decoded `data`into a `%Feedback` struct
   """
   @spec to_feedback(binary) :: Feedback.t
-  def to_feedback(<<timestamp :: size(32), _ :: size(16), token :: binary>> = data) do
+  def to_feedback(<<timestamp :: size(32), _ :: size(16), token :: binary-size(32)>> = data) do
     %Feedback{timestamp: timestamp, device_token: Base.encode16(token)}
   end
 end
