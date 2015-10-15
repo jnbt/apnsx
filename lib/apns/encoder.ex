@@ -9,7 +9,11 @@ defmodule APNSx.Encoder do
   """
 
   @doc """
-    Returns the binary representation of a push notification
+  Returns the binary representation of the `notification`
+
+  ## Example
+    iex> APNSx.Encoder.to_binary(%APNSx.Notification{device_token: "ce8be627", payload: ~S({"aps": {"badge": 1}})})
+    <<2, 0, 0, 0, 7, ...>>
   """
   @spec to_binary(Notification.t) :: binary
   def to_binary(%Notification{} = notification) do
