@@ -1,4 +1,4 @@
-defmodule ApnsX.Mixfile do
+defmodule APNSx.Mixfile do
   use Mix.Project
 
   def project do
