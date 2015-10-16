@@ -8,105 +8,103 @@ defmodule APNSx.Connection do
     {:ok, pid}
   end
 
-  def push(connection, message) do
-    GenServer.call(connection, {:send, message})
+  def write(pid, data) do
+    :ok = GenServer.call(pid, {:write, data})
+    {:ok, pid}
   end
 
-  def close(connection) do
-    GenServer.call(connection, :close)
+  def close(pid) do
+    :ok = GenServer.call(pid, :close)
+    {:ok, pid}
   end
 
-  def handle_call({:connect, host, port, options}, _, _) do
-    Logger.info("Connecting to: #{host}:#{port}")
-    Logger.debug(inspect(options))
-
+  def handle_call({:connect, host, port, options}, {user, _}, _) do
     :ssl.start()
-    {:ok, socket} = ssl_connect(host, port, options)
-    :ok = ssl_accept(socket)
-    {:reply, :ok, socket}
+    Logger.debug("Connecting to: #{host}:#{port}, #{inspect(options)}")
+    {:ok, socket} = ssl_connect_with_options(host, port, options)
+    :ok = :ssl.ssl_accept(socket)
+    Logger.debug("Connected: #{inspect(:ssl.connection_info(socket))}")
+    {:reply, :ok, {user, socket}}
   end
 
-  def handle_call({:send, message}, _, socket) do
-    Logger.debug("Sending: #{inspect(message)}")
-    :ok = ssl_send(socket, message)
-    {:reply, :ok, socket}
+  def handle_call({:write, data}, _, {user, socket}) do
+    Logger.debug("[SEND] #{inspect(data)}")
+    :ok = :ssl.send(socket, data)
+    {:reply, :ok, {user, socket}}
   end
 
-  def handle_call(:close, socket) do
+  def handle_call(:close, _, {user, socket}) do
     Logger.debug("Closing connection")
-    :ok = ssl_close(socket)
-    {:reply, :ok, socket}
+    :ok = :ssl.close(socket)
+    {:reply, :ok, {user, socket}}
   end
 
-  def handle_info({:ssl_closed, _}, socket) do
-    Logger.info("Connection closed")
-    {:stop, :normal, []}
+  def handle_info({:ssl_closed, _}, {user, socket}) do
+    Logger.debug("Connection closed")
+    send(user, :closed)
+    {:stop, :normal, {user, socket}}
   end
 
-  def handle_info({:ssl, s, d}, socket) do
-    Logger.debug("Received: #{inspect(s)}, #{inspect(d)}")
-    {:noreply, socket}
+  def handle_info({:ssl_error, _, reason}, {user, socket}) do
+    Logger.debug("Connection error: #{reason}")
+    send(user, {:error, reason})
+    {:stop, :error, {user, socket}}
   end
 
-  def handle_info(msg, socket) do
-    Logger.warn("Unknown info: #{inspect(msg)}")
-    {:noreplay, socket}
+  def handle_info({:ssl, _, data}, {user, socket}) do
+    Logger.debug("[RECV] #{inspect(data)}")
+    send(user, {:recv, data})
+    {:noreply, {user, socket}}
   end
 
-  defp ssl_send(socket, message) do
-    :ssl.send(socket, message)
+  defp ssl_connect_with_options(host, port, options) do
+    ssl_options = APNSx.Connection.SSLOptions.normalize(options)
+    timeout = options[:timeout] || :infinity
+    :ssl.connect(String.to_char_list(host), port, ssl_options, timeout)
   end
 
-  defp ssl_options(options) do
-    opts = case Keyword.get(options, :sandbox) do
-      # Force TLS v1.1 as a workaround for an OTP SSL bug
-      # See
-      # * https://github.com/inaka/apns4erl/pull/65
-      # * http://erlang.org/pipermail/erlang-questions/2015-June/084935.html
-      true -> [{ :versions, [String.to_atom("tlsv1.1")] }]
-      _ -> []
+  defmodule SSLOptions do
+    def normalize(options) do
+      opts = []
+
+      opts = case Keyword.get(options, :sandbox) do
+        # Force TLS v1.1 as a workaround for an OTP SSL bug
+        # See
+        # * https://github.com/inaka/apns4erl/pull/65
+        # * http://erlang.org/pipermail/erlang-questions/2015-June/084935.html
+        true -> [{ :versions, [String.to_atom("tlsv1.1")] } | opts]
+        _ -> opts
+      end
+
+      opts = case Keyword.get(options, :cert) do
+        [path: path] ->
+          [{ :certfile, path } | opts]
+
+        nil ->
+          opts
+
+        content ->
+          [{ :cert, content } | opts]
+       end
+
+      opts = case Keyword.get(options, :key) do
+        [path: path] ->
+          [{ :keyfile, path } | opts]
+
+        [rsa: content] ->
+          [{ :key, { :RSAPrivateKey, content } } | opts]
+
+        [dsa: content] ->
+          [{ :key, { :DSAPrivateKey, content } } | opts]
+
+        nil ->
+          opts
+
+        content ->
+          [{ :key, { :PrivateKeyInfo, content } } | opts]
+      end
+
+      opts
     end
-
-    opts = case Keyword.get(options, :cert) do
-      [path: path] ->
-        [{ :certfile, path } | opts]
-
-      nil ->
-        opts
-
-      content ->
-        [{ :cert, content } | opts]
-     end
-
-    opts = case Keyword.get(options, :key) do
-      [path: path] ->
-        [{ :keyfile, path } | opts]
-
-      [rsa: content] ->
-        [{ :key, { :RSAPrivateKey, content } } | opts]
-
-      [dsa: content] ->
-        [{ :key, { :DSAPrivateKey, content } } | opts]
-
-      nil ->
-        opts
-
-      content ->
-        [{ :key, { :PrivateKeyInfo, content } } | opts]
-    end
-
-    opts
-  end
-
-  defp ssl_accept(socket) do
-    :ssl.ssl_accept(socket)
-  end
-
-  defp ssl_connect(host, port, options) do
-    :ssl.connect(String.to_char_list(host), port, ssl_options(options), options[:timeout] || :infinity)
-  end
-
-  defp ssl_close(socket) do
-    :ssl.close(socket)
   end
 end
