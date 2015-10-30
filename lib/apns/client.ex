@@ -10,6 +10,7 @@ defmodule APNSx.Client do
 
   def push(client, %Notification{} = notification) do
     send(client, {:push, notification})
+    {:ok, client}
   end
 
   defp connect(host, port, options) do
