@@ -23,7 +23,7 @@ defmodule APNSx.Connection do
     Logger.debug("Connecting to: #{host}:#{port}, #{inspect(options)}")
     {:ok, socket} = ssl_connect_with_options(host, port, options)
     :ok = :ssl.ssl_accept(socket)
-    Logger.debug("Connected: #{inspect(:ssl.connection_info(socket))}")
+    Logger.debug("Connected: #{inspect(:ssl.connection_information(socket))}")
     {:reply, :ok, {user, socket}}
   end
 
@@ -67,13 +67,13 @@ defmodule APNSx.Connection do
     def normalize(options) do
       opts = []
 
-      opts = case Keyword.get(options, :sandbox) do
-        # Force TLS v1.1 as a workaround for an OTP SSL bug
+      opts = case Keyword.get(options, :versions) do
+        # Allow TLS v1, v1.1, v1.2 as a workaround for an OTP SSL
         # See
         # * https://github.com/inaka/apns4erl/pull/65
         # * http://erlang.org/pipermail/erlang-questions/2015-June/084935.html
-        true -> [{ :versions, [String.to_atom("tlsv1.1")] } | opts]
-        _ -> opts
+        nil -> [{ :versions, [:"tlsv1", :"tlsv1.1", :"tlsv1.2"] } | opts]
+        versions -> [{:versions, versions} | opts]
       end
 
       opts = case Keyword.get(options, :cert) do
