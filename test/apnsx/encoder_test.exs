@@ -1,5 +1,5 @@
 defmodule APNSx.EncoderTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias APNSx.Encoder
   alias APNSx.Notification
 
