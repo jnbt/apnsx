@@ -23,7 +23,7 @@ defmodule APNSx.Connection do
     Logger.debug("Connecting to: #{host}:#{port}, #{inspect(options)}")
     {:ok, socket} = ssl_connect_with_options(host, port, options)
     :ok = :ssl.ssl_accept(socket)
-    Logger.debug("Connected: #{inspect(:ssl.connection_information(socket))}")
+    Logger.debug("Connected: #{inspect(:ssl.connection_info(socket))}")
     {:reply, :ok, {user, socket}}
   end
 
