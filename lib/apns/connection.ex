@@ -104,6 +104,14 @@ defmodule APNSx.Connection do
           [{ :key, { :PrivateKeyInfo, content } } | opts]
       end
 
+      opts = case Keyword.get(options, :password) do
+        nil -> opts
+        content when is_binary(content) ->
+          chars = String.to_char_list(content)
+          [{:password, chars} | opts]
+        content -> [{:password, content} | opts]
+      end
+
       opts
     end
   end
