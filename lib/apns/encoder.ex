@@ -17,52 +17,44 @@ defmodule APNSx.Encoder do
   """
   @spec to_binary(Notification.t) :: binary
   def to_binary(%Notification{} = notification) do
-    Map.from_struct(notification)
-    |> itemize
+    notification
     |> frame
+    |> package
   end
 
-  defp frame(data) do
-    data_size = byte_size(data)
-    <<2>> <> <<data_size :: size(32)>> <> data
+  defp frame(notification) do
+    token   = encode_device_token(notification.device_token)
+    payload = notification.payload
+    <<
+      1                     :: 8,
+      32                    :: 16,
+      token                 :: binary,
+      2                     :: 8,
+      byte_size(payload)    :: 16,
+      payload               :: binary,
+      3                     :: 8,
+      4                     :: 16,
+      notification.id       :: 32,
+      4                     :: 8,
+      4                     :: 16,
+      notification.expiry   :: 32,
+      5                     :: 8,
+      1                     :: 16,
+      notification.priority :: 8
+    >>
   end
 
-  defp itemize(n, acc \\ <<>>)
-
-  defp itemize(%{device_token: token} = n, acc) when is_binary(token) do
-    normalized = normalize_device_token(token)
-    32 = byte_size(normalized)
-    encoded = <<1>> <> <<32 :: size(16)>> <> normalized
-    itemize(Dict.delete(n, :device_token), acc <> encoded)
+  defp package(frame) do
+    <<
+      2                ::  8,
+      byte_size(frame) ::  32,
+      frame            ::  binary
+    >>
   end
 
-  defp itemize(%{payload: payload} = n, acc) when is_binary(payload) do
-    payload_size = byte_size(payload)
-    encoded = <<2>> <> <<payload_size :: size(16)>> <> payload
-    itemize(Dict.delete(n, :payload), acc <> encoded)
-  end
-
-  defp itemize(%{id: id} = n, acc) when is_integer(id) do
-    encoded = <<3>> <> <<4 :: size(16)>> <> <<id :: size(32)>>
-    itemize(Dict.delete(n, :id), acc <> encoded)
-  end
-
-  defp itemize(%{expiry: expiry} = n, acc) when is_integer(expiry) do
-    encoded = <<4>> <> <<4 :: size(16)>> <> <<expiry :: size(32)>>
-    itemize(Dict.delete(n, :expiry), acc <> encoded)
-  end
-
-  defp itemize(%{priority: priority} = n, acc) when is_integer(priority) do
-    encoded = <<5>> <> <<1 :: size(16)>> <> <<priority :: size(8)>>
-    itemize(Dict.delete(n, :priority), acc <> encoded)
-  end
-
-  defp itemize(_, acc), do: acc
-
-  defp normalize_device_token(token) do
+  defp encode_device_token(token) do
     token
     |> String.replace(~r/[<\s>]/, "")
-    |> String.upcase
-    |> Base.decode16!
+    |> Base.decode16!(case: :mixed)
   end
 end

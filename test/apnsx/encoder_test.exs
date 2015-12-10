@@ -4,7 +4,7 @@ defmodule APNSx.EncoderTest do
   alias APNSx.Notification
 
   @notification %Notification{
-    device_token: "<ce8be627 2e43e855 16033e24 b4c28922 0eeda487 9c477160 b2545e95 b68b5969>",
+    device_token: "<CE8BE627 2e43e855 16033e24 b4c28922 0eeda487 9c477160 b2545e95 b68b5969>",
     payload: ~S({"aps": {"badge": 1}}),
     id: 42,
     expiry: 1444909802,
@@ -53,10 +53,6 @@ defmodule APNSx.EncoderTest do
   test "fifth item is priority" do
     {5, 1, <<priority>>} = Enum.at(extract_items, 4)
     assert 5 == priority
-  end
-
-  test "handles empty notification" do
-    assert <<2, 0, 0, 0, 0>> == Encoder.to_binary(%Notification{})
   end
 
   defp extract_items(data \\ @encoded) do
