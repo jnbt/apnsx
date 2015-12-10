@@ -14,6 +14,6 @@ defmodule APNSx.Notification do
     device_token: nil,
     payload: nil,
     id: nil,
-    expiry: nil,
-    priority: nil]
+    expiry: 86_400_000,
+    priority: 5]
 end
