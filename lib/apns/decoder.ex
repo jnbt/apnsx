@@ -10,7 +10,7 @@ defmodule APNSx.Decoder do
   """
 
   @doc """
-  Returns the decoded `data` binary into a `%Failure` struct
+  Returns the decoded `arg` binary as a `%Failure` struct
   """
   @spec to_failure(binary) :: Failure.t
   def to_failure(<<8, code, id :: size(32)>>) do
@@ -18,7 +18,7 @@ defmodule APNSx.Decoder do
   end
 
   @doc """
-  Returns the decoded `data`into a `%Feedback` struct
+  Returns the decoded `arg` binary as a `%Feedback` struct
   """
   @spec to_feedback(binary) :: Feedback.t
   def to_feedback(<<timestamp :: size(32), _ :: size(16), token :: binary-size(32)>>) do
