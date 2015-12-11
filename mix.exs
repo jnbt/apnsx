@@ -3,11 +3,14 @@ defmodule APNSx.Mixfile do
 
   def project do
     [app: :apnsx,
-     version: "0.0.1",
+     name: "APNSx",
+     source_url: "https://github.com/jnbt/apnsx",
+     version: "0.0.1-dev",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps,
+     docs: [extras: ["README.md"]]]
   end
 
   def application do
@@ -17,6 +20,6 @@ defmodule APNSx.Mixfile do
   defp deps do
     [{:mix_test_watch, "~> 0.2", only: :dev},
      {:ex_doc, "~> 0.10", only: :docs},
-     {:inch_ex, "~> 0.4", only: [:dev, :docs]}]
+     {:inch_ex, "~> 0.4", only: :docs}]
   end
 end

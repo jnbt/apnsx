@@ -1,18 +1,33 @@
 defmodule APNSx.Connection do
+  @moduledoc """
+  Connects to the APNS server via a raw SSL socket
+  """
   use GenServer
   require Logger
 
+  @doc """
+    Connects to the `host`:`port` using the defined `options`
+  """
+  @spec start(String.t, pos_integer, Keyword.t) :: {:ok, pid}
   def start(host, port, options) do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok)
     :ok = GenServer.call(pid, {:connect, host, port, options})
     {:ok, pid}
   end
 
+  @doc """
+    Sends binary `data` to the APNS server
+  """
+  @spec write(pid, binary) :: {:ok, pid}
   def write(pid, data) do
     :ok = GenServer.call(pid, {:write, data})
     {:ok, pid}
   end
 
+  @doc """
+    Closes the SSL connection
+  """
+  @spec close(pid) :: {:ok, pid}
   def close(pid) do
     :ok = GenServer.call(pid, :close)
     {:ok, pid}
@@ -64,6 +79,8 @@ defmodule APNSx.Connection do
   end
 
   defmodule SSLOptions do
+    @moduledoc false
+
     def normalize(options) do
       opts = []
 

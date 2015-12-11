@@ -28,6 +28,10 @@ defmodule APNSx.Failure do
   @doc """
   Returns a `%APNSx.Failure` struct for the given status `code` and the
   `id` if the failed notification
+
+  ## Example
+    iex> APNSx.Failure.build(1, 1_001)
+    %APNSx.Failure{code: 1, reason: "Processing error", id: 1_001}
   """
   @spec build(non_neg_integer, non_neg_integer) :: t
   def build(code, id) do

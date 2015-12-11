@@ -1,5 +1,6 @@
 defmodule APNSx.DecoderTest do
   use ExUnit.Case, async: true
+  doctest APNSx.Decoder
   alias APNSx.Decoder
 
   test "parses a failure" do

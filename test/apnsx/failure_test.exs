@@ -1,5 +1,6 @@
 defmodule APNSx.FailureTest do
   use ExUnit.Case, async: true
+  doctest APNSx.Failure
   alias APNSx.Failure
 
   test "get failure struct for code and id" do

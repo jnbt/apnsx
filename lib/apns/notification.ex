@@ -26,8 +26,9 @@ defmodule APNSx.Notification do
   Checks a `notification` to be valid for transmission
 
   ## Example
-    iex> APNSx.Notification.valid?(%APNSx.Notification{})
-    {:error, {:id, :must_be_present}}
+
+      iex> APNSx.Notification.valid?(%APNSx.Notification{})
+      {:error, {:id, :must_be_present}}
   """
   def valid?(%__MODULE__{} = notification) do
     check(notification)
