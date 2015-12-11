@@ -9,8 +9,12 @@ defmodule APNSx.Client do
   end
 
   def push(client, %Notification{} = notification) do
-    send(client, {:push, notification})
-    {:ok, client}
+    case Notification.valid?(notification) do
+      :ok ->
+        send(client, {:push, notification})
+        {:ok, client}
+      error -> error
+    end
   end
 
   defp connect(host, port, options) do
