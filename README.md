@@ -3,9 +3,10 @@ APNSx
 
 [![Build Status](https://travis-ci.org/jnbt/apnsx.svg)](https://travis-ci.org/jnbt/apnsx)
 [![Inline docs](https://inch-ci.org/github/jnbt/apnsx.svg)](https://inch-ci.org/github/jnbt/apnsx)
+[![Deps Status](https://beta.hexfaktor.org/badge/all/github/jnbt/apnsx.svg)](https://beta.hexfaktor.org/github/jnbt/apnsx)
 
 :construction: :warning:
-**This project is in very stage. Things will change!**
+**This project is in development. Things will change!**
 
 ## Usage
 
